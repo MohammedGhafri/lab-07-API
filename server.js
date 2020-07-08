@@ -87,10 +87,11 @@ app.get('/trials',(req,res)=>{
 
     const TRAIL_API_KEY=process.env.TRAIL_API_KEY;
    
-    const myId=req.query.ids;
+    // const myId=req.query.ids;
     let arr=[];
+    const url=` https://www.hikingproject.com/data/get-trails?lat=${req.query.latitude}&lon=${req.query.longitude}&key=${TRAIL_API_KEY}`;
 
-    const url=`https://www.hikingproject.com/data/get-trails-by-id?ids=${myId}&key=${TRAIL_API_KEY}`;
+    // const url=`https://www.hikingproject.com/data/get-trails-by-id?ids=${myId}&key=${TRAIL_API_KEY}`;
 
     console.log("trailData.body")
  
