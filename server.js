@@ -11,6 +11,7 @@ const superagent=require('superagent');
 
 
 
+
 const client=new pg.Client(process.env.DATABASE_URL);
 client.connect()
 .then(()=>{
@@ -26,50 +27,44 @@ app.get('/location',(req,res)=>{
     const GEOCODE_API_KEY=process.env.GEOCODE_API_KEY;
     const city=req.query.city;
     const url=`https://eu1.locationiq.com/v1/search.php?key=${GEOCODE_API_KEY}&q=${city}&format=json`;
-    const SQL0=`SELECT * FROM cities WHERE city_name=${city}`;
-    const SQL1=`SELECT * FROM cities `;
-    let SQL = `INSERT INTO cities (first_name,last_name) VALUES ('mmmmmm','gggggg')`
-    // const SQL=`INSERT INTO cities VALUES ($1,$2,$3,$4)`;
-    // const safeVAlues=city;
-    // console.log("client")
-    client.query(SQL)
-    .then(results=>{
-        res.status(200).json(results);
+    // const SQL0=`SELECT * FROM cities WHERE city_name=${city}`;
+    // const SQL1=`SELECT * FROM cities `;
+    let SQL = `INSERT INTO cities (city_name,formatted_query,latitude,longitude) VALUES ($1,$2,$3,$4)`;
+    client.query(`SELECT * FROM cities WHERE city_name= '${city}'`)
+    .then(result=>{
+        if(result.rows.length>0){
+            console.log("this result from data base : ")
+            
+            res.send(result.rows[0]);
+        }else{
+            superagent.get(url)
+            .then(data=>{
+                
+               
+                const location=new Locationdata(city,data.body[0])
+            
+
+                var safeVAlues=[location.search_query,location.formatted_query,location.latitude,location.longitude];
+                client.query(SQL,safeVAlues)
+                .then(()=>{
+            console.log("this result from API : ")
+
+                    res.send(location)
+                })
+                // res.send(location)
+                // console.log(data.body)
+            })
+        }
     })
-//     client.query(SQL0)
-//     .then(reslut=>{
-//         if(reslut){
-// // client.query(SQL,safeVAlues)
-// //             .then(result2=>{
-// //                 res.send(result2) 
-// // res.send(reslut);
-            
-//         }else{
-//             superagent.get(url)
-//             .then(data=>{
-                
-//                 const location=new Locationdata(city,data.body[0])
-                
-//                 res.send(location)
-//                 console.log(data.body)
-//             })
-// client.query(SQL,safeVAlues)
-// .then(res)
 
-            
-//         }
-//     })
-
-
-
-    // res.send(url);
+   
 })
 app.get('/weather',(req,res)=>{
 const WEATHER_API_KEY=process.env.WEATHER_API_KEY;
 const city=req.query.city;
 let arr=[];
 
-const url=`https://api.weatherbit.io/v2.0/forecast/daily?city=${city}&key=${WEATHER_API_KEY}`
+const url=`https://api.weatherbit.io/v2.0/forecast/daily?&lat=${req.query.latitude}&lon=${req.query.longitude}&key=${WEATHER_API_KEY}`
 superagent.get(url)
 .then(geodata=>{
     // console.log(geodata.body.data[0].weather.description)
@@ -79,6 +74,7 @@ superagent.get(url)
 arr.push(new Weather(city,item));
 
     })
+    console.log(arr);
     res.send(arr)
 
     // const weather1=new Weather(city,data.body)
@@ -136,4 +132,5 @@ this.search_query=city;
 this.formatted_query= obj.display_name;
 this.latitude= obj.lat;
 this.longitude=obj.lon;
+
 }
