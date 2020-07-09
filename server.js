@@ -9,10 +9,12 @@ app.use(cors());
 const superagent=require('superagent');
 
 
-
+let lat;
+let lon;
 
 
 const client=new pg.Client(process.env.DATABASE_URL);
+
 client.connect()
 .then(()=>{
 
@@ -34,7 +36,8 @@ app.get('/location',(req,res)=>{
     .then(result=>{
         if(result.rows.length>0){
             console.log("this result from data base : ")
-            
+            lat=result.rows.latitude;
+            lon=result.rows.longitude;
             res.send(result.rows[0]);
         }else{
             superagent.get(url)
@@ -43,6 +46,9 @@ app.get('/location',(req,res)=>{
                
                 const location=new Locationdata(city,data.body[0])
             
+                lat=location.latitude;
+                lon=location.longitude;
+                console.log(lat,lon)
 
                 var safeVAlues=[location.search_query,location.formatted_query,location.latitude,location.longitude];
                 client.query(SQL,safeVAlues)
@@ -59,12 +65,15 @@ app.get('/location',(req,res)=>{
 
    
 })
+console.log(lat,lon);
+
 app.get('/weather',(req,res)=>{
 const WEATHER_API_KEY=process.env.WEATHER_API_KEY;
 const city=req.query.city;
 let arr=[];
 
 const url=`https://api.weatherbit.io/v2.0/forecast/daily?&lat=${req.query.latitude}&lon=${req.query.longitude}&key=${WEATHER_API_KEY}`
+// const url=`https://api.weatherbit.io/v2.0/forecast/daily?&lat=${lat}&lon=${lon}&key=${WEATHER_API_KEY}`
 superagent.get(url)
 .then(geodata=>{
     // console.log(geodata.body.data[0].weather.description)
@@ -81,28 +90,37 @@ arr.push(new Weather(city,item));
 })
 })
 
+// trails
 
-
-app.get('/trials',(req,res)=>{
+app.get('/trails',(req,res)=>{
+    console.log("this from trails:",lat,lon);
 
     const TRAIL_API_KEY=process.env.TRAIL_API_KEY;
    
     // const myId=req.query.ids;
+    
     let arr=[];
-    const url=` https://www.hikingproject.com/data/get-trails?lat=${req.query.latitude}&lon=${req.query.longitude}&key=${TRAIL_API_KEY}`;
+    
+    var url=`https://www.hikingproject.com/data/get-trails?lat=${req.query.latitude}&lon=${req.query.longitude}&key=${TRAIL_API_KEY}`;
+    // const url=` https://www.hikingproject.com/data/get-trails?lat=${lat}&lon=${lon}&key=${TRAIL_API_KEY}`;
+    
+
+    // const url=   `https://www.hikingproject.com/data/get-trails?lat=36.5748441&lon=139.2394179&key=200828559-73086a170969e539c2fa8f4dce60f676`;
+console.log('this from trailsssssssssssssssss',req.query.latitude,req.query.longitude)
 
     // const url=`https://www.hikingproject.com/data/get-trails-by-id?ids=${myId}&key=${TRAIL_API_KEY}`;
 
-    console.log("trailData.body")
+    // console.log("trailData.body")
  
-        superagent.get(url)
-        .then(traiData=>{
-            // console.log(traiData.body.trails[0].name)
-            traiData.body.trails.map(item=>{
-                console.log(item)
+    superagent.get(url)
+    .then(trailData=>{
+        console.log("url")
+            // console.log(trailData.body.trails[0].name)
+            trailData.body.trails.map(item=>{
                 arr.push(new Trials(item))
             })
-            res.send(arr)
+            console.log(arr[0])
+            res.send(arr[0])
         })
         // console.log(arr);
 })
