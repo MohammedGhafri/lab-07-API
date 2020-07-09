@@ -153,10 +153,17 @@ app.get('/movies', (req, res) => {
 //localhost:3000/yelp?lat=47.6038321&lon=-122.3300624
 app.get('/yelp', (req, res) => {
     let YELP_API_KEY = process.env.YELP_API_KEY;
-    let lat = req.query.lat;
-    let lon = req.query.lon;
+    let lat = req.query.latitude;
+    let lon = req.query.longitude;
     console.log("this from yelp",lat,lon)
-    const url = `https://api.yelp.com/v3/events?latitude=${lat}&longitude=${lon}`;
+    const url=`https://api.yelp.com/v3/businesses/search?latitude=${lat}&longitude=${lon}`;
+    // const url = `https://api.yelp.com/v3/events?latitude=${lat}&longitude=${lon}`;
+
+    superagent.get(url)
+    .set("Authorization", `Bearer ${YELP_API_KEY}`)
+    .then(result=>{
+        res.status(200).json(result);
+    })
 
     // var myHeaders = new Headers();
     // myHeaders.append("Authorization", "Bearer");
