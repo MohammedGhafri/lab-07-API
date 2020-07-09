@@ -124,9 +124,42 @@ console.log('this from trailsssssssssssssssss',req.query.latitude,req.query.long
         })
         // console.log(arr);
 })
+
+
+app.get('/movies',(req,res)=>{
+    let city=req.query.city;
+    let MOVIE_API_KEY=process.env.MOVIE_API_KEY;
+    const url=`https://api.themoviedb.org/3/search/movie?api_key=${MOVIE_API_KEY}&query=${city}&language=en-US`
+    superagent.get(url)
+    .then(result=>{
+        let toObjj=JSON.parse(result.text);
+        let arr=toObjj.results;
+
+
+        let arrNew=arr.map(item=>{
+            return new topTwinty(item);
+        })
+        console.log(arrNew[0])
+    
+        
+        res.send(arrNew)
+    })
+})
 app.get('*',(req,res)=>{
     res.status(404).send("Try again don't surrender ♥, The Life is about: trail trail trail , then faild faild also faild then get up then tast the success")
 })
+
+function topTwinty(arr){
+
+    this.title=arr.title;
+   this.overview=arr.overview;
+    this.average_votes=arr.vote_average;
+    this.total_votes=arr.vote_count;
+    this.image_url=`https://image.tmdb.org/t/p/w500/${arr.poster_path}`;
+    this.popularity=arr.popularity;
+    this.released_on=arr.release_date;
+  
+}
 
 function Trials(item){
     this.name=item.name;
