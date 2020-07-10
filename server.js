@@ -147,16 +147,46 @@ app.get('/movies', (req, res) => {
             res.send(arrNew)
         })
 })
-
+function YelpRedn(ydata){
+    this.name=ydata.name ;
+    this.image_url=ydata.image_url ;
+    this.price=ydata.price ;
+    this.rating =`${ydata.rating}` ;
+    this.url=ydata.url ;
+}
 
 //https://api.yelp.com/v3/events
 //localhost:3000/yelp?lat=47.6038321&lon=-122.3300624
 app.get('/yelp', (req, res) => {
     let YELP_API_KEY = process.env.YELP_API_KEY;
-    let lat = req.query.lat;
-    let lon = req.query.lon;
+    let lat = req.query.latitude;
+    let lon = req.query.longitude;
     console.log("this from yelp",lat,lon)
-    const url = `https://api.yelp.com/v3/events?latitude=${lat}&longitude=${lon}`;
+    const url=`https://api.yelp.com/v3/businesses/search?latitude=${lat}&longitude=${lon}`;
+    // const url = `https://api.yelp.com/v3/events?latitude=${lat}&longitude=${lon}`;
+
+    superagent.get(url)
+    .set("Authorization", `Bearer ${YELP_API_KEY}`)
+    .then(result=>{
+        let convToObj=JSON.parse(result.text);
+        let renderObj=convToObj.businesses.map(item=>{
+           return new YelpRedn(item);
+
+        })
+        // console.log(renderObj)
+        
+        res.status(200).json(renderObj);
+    })
+
+
+
+    // {
+    //     "name": "Pike Place Chowder",
+    //     "image_url": "https://s3-media3.fl.yelpcdn.com/bphoto/ijju-wYoRAxWjHPTCxyQGQ/o.jpg",
+    //     "price": "$$   ",
+    //     "rating": "4.5",
+    //     "url": "https://www.yelp.com/biz/pike-place-chowder-seattle?adjust_creative=uK0rfzqjBmWNj6-d3ujNVA&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=uK0rfzqjBmWNj6-d3ujNVA"
+    //   },
 
     // var myHeaders = new Headers();
     // myHeaders.append("Authorization", "Bearer");

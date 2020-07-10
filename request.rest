@@ -1,2 +1,3 @@
-GET http://localhost:3000/location?city=amman
+
+GET http://localhost:3000/yelp?lat=47.6038321&lon=-122.3300624
 
