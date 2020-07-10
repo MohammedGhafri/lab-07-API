@@ -147,7 +147,13 @@ app.get('/movies', (req, res) => {
             res.send(arrNew)
         })
 })
-
+function YelpRedn(ydata){
+    this.name=ydata.name ;
+    this.image_url=ydata.image_url ;
+    this.price=ydata.price ;
+    this.rating =`${ydata.rating}` ;
+    this.url=ydata.url ;
+}
 
 //https://api.yelp.com/v3/events
 //localhost:3000/yelp?lat=47.6038321&lon=-122.3300624
@@ -162,7 +168,14 @@ app.get('/yelp', (req, res) => {
     superagent.get(url)
     .set("Authorization", `Bearer ${YELP_API_KEY}`)
     .then(result=>{
-        res.status(200).json(result);
+        let convToObj=JSON.parse(result.text);
+        let renderObj=convToObj.businesses.map(item=>{
+           return new YelpRedn(item);
+
+        })
+        // console.log(renderObj)
+        
+        res.status(200).json(renderObj);
     })
 
 
